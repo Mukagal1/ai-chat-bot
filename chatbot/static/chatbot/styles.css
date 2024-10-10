@@ -1,0 +1,174 @@
+/* Общие стили для всех страниц */
+* {
+   box-sizing: border-box;
+   margin: 0;
+   padding: 0;
+}
+body {
+   font-family: Arial, sans-serif;
+   background-color: #f4f4f4;
+   color: #333;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   height: 100vh;
+}
+/* Контейнер для страниц логина и регистрации */
+.container {
+   background: white;
+   border-radius: 5px;
+   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+   padding: 20px;
+   width: 300px;
+}
+h2 {
+   text-align: center;
+   margin-bottom: 20px;
+}
+.form-group {
+   margin-bottom: 15px;
+}
+label {
+   display: block;
+   margin-bottom: 5px;
+}
+input[type="text"],
+input[type="password"],
+input[type="email"] {
+   width: 100%;
+   padding: 10px;
+   border: 1px solid #ccc;
+   border-radius: 3px;
+}
+button {
+   width: 100%;
+   padding: 10px;
+   background-color: #5cb85c;
+   color: white;
+   border: none;
+   border-radius: 3px;
+   cursor: pointer;
+}
+button:hover {
+   background-color: #4cae4c;
+}
+.error {
+   color: red;
+   margin-bottom: 10px;
+}
+.logout-button {
+   display: inline-block;
+   margin-top: 20px;
+   padding: 10px 20px;
+   background-color: #d9534f;
+   color: white;
+   text-decoration: none;
+   border-radius: 3px;
+}
+.logout-button:hover {
+   background-color: #c9302c;
+}
+p {
+   text-align: center;
+   margin-top: 10px;
+}
+/* Стили для страницы чата */
+body {
+   background-color: #f4f4f9;
+   margin: 0;
+   padding: 0;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   height: 100vh;
+}
+.container-chat {
+   width: 400px;
+   background-color: white;
+   border-radius: 10px;
+   box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+   padding: 20px;
+   display: flex;
+   flex-direction: column;
+   justify-content: space-between;
+   height: 500px;
+}
+h1 {
+   text-align: center;
+   color: #333;
+   margin-bottom: 20px;
+}
+/* Стили для блока чата */
+#chat-box {
+   flex-grow: 1;
+   padding: 10px;
+   border: 1px solid #ddd;
+   border-radius: 5px;
+   overflow-y: auto;
+   background-color: #f9f9f9;
+   margin-bottom: 15px;
+}
+#chat-box p {
+   margin: 8px 0;
+   padding: 8px;
+   border-radius: 10px;
+}
+#chat-box p:nth-child(odd) {
+   background-color: #e0f7fa;
+   align-self: flex-start;
+}
+#chat-box p:nth-child(even) {
+   background-color: #ffeb3b;
+   align-self: flex-end;
+}
+/* Стили для формы ввода сообщения */
+form {
+   display: flex;
+   align-items: center;
+}
+#message-input {
+   width: 100%;
+   padding: 10px;
+   border: 1px solid #ccc;
+   border-radius: 5px;
+   margin-right: 10px;
+   font-size: 16px;
+}
+button {
+   padding: 10px 20px;
+   background-color: #4caf50;
+   border: none;
+   border-radius: 5px;
+   color: white;
+   font-size: 16px;
+   cursor: pointer;
+}
+button:hover {
+   background-color: #45a049;
+}
+/* Стили для кнопки Logout */
+.logout-button {
+   display: block;
+   text-align: center;
+   padding: 10px 20px;
+   background-color: #f44336;
+   color: white;
+   border-radius: 5px;
+   text-decoration: none;
+   margin-top: 15px;
+}
+.logout-button:hover {
+   background-color: #d32f2f;
+}
+/* Адаптивность для мобильных устройств */
+@media (max-width: 500px) {
+   .container-chat {
+       width: 100%;
+       height: 100%;
+       border-radius: 0;
+   }
+   button {
+       font-size: 14px;
+       padding: 8px;
+   }
+}
