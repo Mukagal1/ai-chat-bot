@@ -81,10 +81,15 @@ WSGI_APPLICATION = 'chat_project.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'ai_chatbot_db_uacn',  # The database name
+        'USER': 'ai_chatbot_db_uacn_user',  # The database user
+        'PASSWORD': 'H4FeENDItwjtpfmoy5rnsti4wsXCWqWl',  # The password for the database user
+        'HOST': 'dpg-cs5tpct6l47c73f8at50-a.frankfurt-postgres.render.com',  # The database host
+        'PORT': '5432',  # The default PostgreSQL port
     }
 }
+
 
 
 # Password validation
