@@ -18,7 +18,6 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', RedirectView.as_view(url='/chatbot/premain', permanent=False)),
     path('main/', views.main, name='main'),  # Main page
     path('login/', views.login_view, name='login'),  # Login page
     path('logout/', views.logout_view, name='logout'),  # Logout page
