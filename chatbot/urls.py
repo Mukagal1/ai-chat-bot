@@ -22,5 +22,6 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),  # Login page
     path('logout/', views.logout_view, name='logout'),  # Logout page
     path('register/', views.register_view, name='register'),  # Register page
+    path('premain/', views.premain, name='premain'),  # Pre-main page
 
 ]

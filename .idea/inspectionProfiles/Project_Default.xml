@@ -1,0 +1,26 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredIdentifiers">
+        <list>
+          <option value="sordpay_bs_app.sordpay_bstest_main" />
+          <option value="sordpay_bs_app.sleep" />
+          <option value="sordpay_bs_app.instance" />
+          <option value="sordpay_bs_app.main" />
+          <option value="sordpay_bs_app.datetime" />
+          <option value="sordpay_bs_app.BSTest" />
+          <option value="sordpay_bs_app.accept_clear" />
+          <option value="sordpay_bs_app.temp_obj" />
+          <option value="sordpay_bs_main.main" />
+          <option value="sordpay_bs_main.send_keys" />
+          <option value="sordpay_bs_main.instance" />
+          <option value="sordpay_bs_main.app" />
+          <option value="Application" />
+          <option value="send_keys" />
+          <option value="app" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>
