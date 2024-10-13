@@ -82,11 +82,11 @@ WSGI_APPLICATION = 'chat_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ai_chatbot_db_uacn',  # The database name
-        'USER': 'ai_chatbot_db_uacn_user',  # The database user
-        'PASSWORD': 'H4FeENDItwjtpfmoy5rnsti4wsXCWqWl',  # The password for the database user
-        'HOST': 'dpg-cs5tpct6l47c73f8at50-a.frankfurt-postgres.render.com',  # The database host
-        'PORT': '5432',  # The default PostgreSQL port
+        'NAME': env('DB_NAME'),  # The database name
+        'USER': env('DB_USER'),  # The database user
+        'PASSWORD': env('DB_PASSWORD'),  # The password for the database user
+        'HOST': env('DB_HOST'),  # The database host
+        'PORT': env('DB_PORT', default='5432'),  # The default PostgreSQL port
     }
 }
 
