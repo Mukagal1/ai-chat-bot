@@ -34,7 +34,7 @@ def register_view(request):
         username = request.POST['username']
         email = request.POST['email']
         password = request.POST['password']
-        User.objects.create_user(username=username, email=email, password=password)
+        ChatUser.objects.create(username=username, email=email, password=password)
         return redirect('login')  # Redirecting to login page
     return render(request, 'chatbot/register.html')
 
@@ -74,19 +74,15 @@ def main(request):
             data = json.loads(request.body)
             user_message = data.get('message', '')
 
-            print(user_message)
-
             session, _ = ChatSessions.objects.get_or_create(
                 username=username,
                 is_active=True,
                 defaults={'title': 'New session'}
             )
 
-            print(session)
-
             ChatDetails.objects.create(
                 sender='user',
-                session_id=session,
+                session=session,
                 message=user_message
             )
 
@@ -94,7 +90,7 @@ def main(request):
 
             ChatDetails.objects.create(
                 sender='assistant',
-                session_id=session,
+                session=session,
                 message=response
             )
 
