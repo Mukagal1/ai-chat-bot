@@ -2,7 +2,7 @@ import os
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import User, Message
+from .models import ChatUser, ChatSessions, ChatDetails
 import json
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
@@ -41,18 +41,28 @@ def register_view(request):
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-def get_ai_response(message):
+def get_ai_response(new_message, conversation_history):
     try:
+        conversation_history.append({"role": "user", "content": new_message})
+        
         response = client.chat.completions.create(
             model="gpt-4o-mini",
-            messages=[{"role": "user", "content": message}]
+            messages=conversation_history
         )
+        
+        conversation_history.append({"role": "assistant", "content": response.choices[0].message.content})
         
         return response.choices[0].message.content
     
     except Exception as e:
         print("Error in get_ai_response:", str(e))
         raise e
+
+
+history = []
+
+import logging
+logger = logging.getLogger(__name__)
 
 @csrf_exempt
 @login_required
@@ -64,15 +74,40 @@ def main(request):
             data = json.loads(request.body)
             user_message = data.get('message', '')
 
-            response = get_ai_response(user_message)
+            print(user_message)
+
+            session, _ = ChatSessions.objects.get_or_create(
+                username=username,
+                is_active=True,
+                defaults={'title': 'New session'}
+            )
+
+            print(session)
+
+            ChatDetails.objects.create(
+                sender='user',
+                session_id=session,
+                message=user_message
+            )
+
+            response = get_ai_response(user_message, history)
+
+            ChatDetails.objects.create(
+                sender='assistant',
+                session_id=session,
+                message=response
+            )
 
             return JsonResponse({'response': response, 'username': username})
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User does not exist'}, status=404)
         except Exception as e:
+            logger.error(f"Error: {str(e)}")
             return JsonResponse({'error': str(e)}, status=500)
 
-    return render(request, 'chatbot/main.html', {'username': username})  # Pass the username to the template
+    return render(request, 'chatbot/main.html', {'username': username})
 
 
 @csrf_exempt
@@ -82,7 +117,7 @@ def premain(request):
             data = json.loads(request.body)
             user_message = data.get('message', '')
 
-            response = get_ai_response(user_message)
+            response = get_ai_response(user_message, history)
 
 
             return JsonResponse({'response': response})
@@ -95,5 +130,6 @@ def premain(request):
 
 def logout_view(request):
     logout(request)
+    history.clear()
     print('logged out')
     return redirect('login')
