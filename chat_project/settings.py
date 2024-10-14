@@ -29,7 +29,6 @@ SECRET_KEY = env('SECRET_KEY')
 OPENAI_API_KEY = env('OPENAI_API_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-DEBUG = 'RENDER' not in os.environ
 
 ALLOWED_HOSTS = ['ai-chat-bot-ig9m.onrender.com', 'localhost', '127.0.0.1']
 
@@ -79,6 +78,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'chat_project.wsgi.application'
 
+
+DEFAULT_AUTO_FIELD='django.db.models.AutoField'
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
