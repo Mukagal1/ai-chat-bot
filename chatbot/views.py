@@ -2,7 +2,7 @@ import os
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import ChatUser, ChatSessions, ChatDetails
+from .models import User, ChatSessions, ChatDetails
 import json
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
@@ -34,7 +34,7 @@ def register_view(request):
         username = request.POST['username']
         email = request.POST['email']
         password = request.POST['password']
-        ChatUser.objects.create(username=username, email=email, password=password)
+        User.objects.create_user(username=username, email=email, password=password)
         return redirect('login')  # Redirecting to login page
     return render(request, 'chatbot/register.html')
 

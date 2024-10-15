@@ -1,13 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import User as DjangoUser
 
-class ChatUser(models.Model):  # chatbot_user
+class User(models.Model):  # chatbot_user
     username = models.CharField(max_length=255, unique=True)
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=255)
 
     class Meta:
-        db_table = 'chatuser'
+        db_table = 'user'
 
 class ChatSessions(models.Model):  # chatbot_sessions
     username = models.CharField(max_length=255)
