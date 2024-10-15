@@ -3,6 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="d8e4ecea-ca66-4a6f-893d-5f4bd79ad835" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chatbot/templates/chatbot/main.html" beforeDir="false" afterPath="$PROJECT_DIR$/chatbot/templates/chatbot/main.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chatbot/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/chatbot/views.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

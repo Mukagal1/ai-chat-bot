@@ -22,7 +22,9 @@
             background-color: #ffffff;
             z-index: 10;
             padding: 10px 20px;
+            margin-bottom: 5px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
         }
 
         #chat-box {
@@ -35,7 +37,7 @@
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             display: flex;
-            flex-direction: column-reverse; /* Start from bottom */
+            flex-direction: column; /* Start from top */
         }
 
         .chat-history {
@@ -67,32 +69,30 @@
             padding: 20px;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
             height: 100%;
         }
 
         #session-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        #profile-icon {
-            width: 40px;
-            height: auto;
-            border-radius: 50%;
-            margin-right: 10px;
+            margin-bottom: 5px;
+            border-radius: 10px;
         }
 
         #session-list {
             background-color: #f7f9fc;
             border: 1px solid #ddd;
-            padding: 15px;
+
+            margin-bottom: 12px;
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             overflow-y: auto;
             flex-grow: 1;
-            justify-content: space-between;
+        }
+        .session-list{
+            padding-left:5px;
+            font-weight:bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         #session-list h5 {
@@ -159,15 +159,22 @@
         }
 
         .logout-button:hover {
-            transform: scale(1.1);
+            transform: scale(1.05);
             color: red;
         }
 
         .logout-button p {
             padding: 5px;
             font-weight: bold;
-            color: red;
+            color: black;
+            margin: 9px;
         }
+
+        .logout-icon {
+            margin-right: 5px; /* Add some space between the icon and text */
+            height: 20px; /* Adjust icon height to match text */
+        }
+
 
         .logout-icon {
             width: 30px;
@@ -218,6 +225,45 @@
                 opacity: 1;
             }
         }
+
+        .session-list li:hover {
+            background-color: #e2e6ea; /* Color on hover */
+        }
+
+        .no-sessions {
+            color: #6c757d; /* Gray color for text */
+            font-style: italic; /* Italics */
+        }
+
+        .session-list li {
+            background-color: #f8f9fa; /* Light background */
+            border: 1px solid #dee2e6; /* Light border */
+            border-radius: 5px; /* Rounded corners */
+            margin: 10px 0; /* Spacing between items */
+            padding: 10px; /* Inner spacing */
+            transition: background-color 0.3s; /* Smooth transition */
+            list-style-type: none;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px; /* Ширина скроллбара */
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1); /* Фон трека скроллбара */
+            border-radius: 15px; /* Закругление углов */
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.3); /* Цвет "ползунка" */
+            border-radius: 10px; /* Закругление углов */
+            transition: background 0.3s; /* Плавный переход */
+        }
+
+        /* Эффект при наведении на скроллбар */
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.9); /* Яркий цвет при наведении */
+        }
     </style>
 </head>
 
@@ -225,18 +271,24 @@
     <div class="container-fluid h-100">
         <div class="row h-100">
             <div class="col-3" id="session-history">
-                <div class="h-100 d-flex flex-column" id="session-list">
-                    <div>
-                        <h5>История</h5>
-                        <hr>
-                        <p>Будет добавлено позже...</p>
-                    </div>
-                    <div>
-                        <hr>
-                        <button onclick="location.href='{% url 'logout' %}'" class="logout-button">
-                            <p>Sign out</p><i class="fa fa-sign-out"></i>
-                        </button>
-                    </div>
+                <div id="session-header" class="sticky-header">
+                    <h5>История</h5>
+                </div>
+                <div id="session-list" class="flex-grow-1 overflow-auto">
+                    {% if sessions %}
+                        <ul class="session-list">
+                            {% for session in sessions %}
+                                <li>{{ session.title }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="no-sessions">Нет доступных сессий.</p>
+                    {% endif %}
+                </div>
+                <div class="logout-section shadow-lg bg-white rounded">
+                    <button onclick="location.href='{% url 'logout' %}'" class="logout-button">
+                        <p>Sign out</p><i class="fa fa-sign-out"></i>
+                    </button>
                 </div>
             </div>
             <div class="col-9" id="chat-container">
@@ -325,7 +377,6 @@
             });
         });
     </script>
-
 </body>
 
 </html>
