@@ -73,7 +73,7 @@
         }
 
         #session-header {
-            margin-bottom: 5px;
+
             border-radius: 10px;
         }
 
@@ -264,6 +264,23 @@
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(0, 0, 0, 0.9); /* Яркий цвет при наведении */
         }
+
+        button .fa-plus:hover {
+            transform: scale(1.2);
+        }
+
+        button .fa-plus:active {
+            transform: scale(1.1);
+        }
+        #chat-history {
+            overflow-y: auto; /* Ensure overflow for chat history */
+        }
+
+        #session-list {
+            overflow-y: auto; /* Ensure overflow for session list */
+        }
+
+
     </style>
 </head>
 
@@ -271,8 +288,12 @@
     <div class="container-fluid h-100">
         <div class="row h-100">
             <div class="col-3" id="session-history">
-                <div id="session-header" class="sticky-header">
+                <div id="session-header" class="sticky-header d-flex justify-content-between align-items-center">
                     <h5>История</h5>
+                    <button class="btn" style="border: none; background-color: transparent; padding: 2px; margin: 0;"
+                        data-bs-toggle="tooltip" data-bs-placement="top" title="Новый чат" onclick="createNewChat()">
+                        <i class="fa fa-plus" aria-hidden="true" style="font-size: 20px; color: black; transition: transform 0.2s;"></i>
+                    </button>
                 </div>
                 <div id="session-list" class="flex-grow-1 overflow-auto">
                     {% if sessions %}
@@ -317,10 +338,76 @@
         </div>
     </div>
     <script>
+    function createNewChat() {
+        console.log("Creating a new chat...");
+        fetch("{% url 'main' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ action: 'new_chat' })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);  // Log the response
+            if (data.success && data.last_session) {
+                $('#chat-history').empty();  // Clear the chat history
+                $('#chat-history').append('<p class="chat-placeholder">Добро пожаловать в чатбот! Чатбот будет отвечать на ключевые фразы вашего сообщения.</p>');
+                $('#message-input-field').val('');  // Clear the input field
+
+                // Update session list with the new session
+                updateSessionList(data.last_session);
+            } else {
+                console.error('Ошибка при создании новой сессии:', data.error || 'Неизвестная ошибка');
+            }
+        })
+        .catch(error => console.error('Ошибка:', error));
+    }
+
+    // Function to load chat history when a session is clicked
+    function loadChat(sessionId) {
+        fetch(`{% url 'main' %}/${sessionId}`)
+        .then(response => response.json())
+        .then(data => {
+            $('#chat-history').empty();
+            data.chat_details.forEach(detail => {
+                let messageClass = detail.sender === 'user' ? 'user-message' : 'ai-message';
+                $('#chat-history').append(`<p class="message ${messageClass}">${escapeHtml(detail.message)}</p>`);
+            });
+        })
+        .catch(error => console.error('Ошибка загрузки чата:', error));
+    }
+
+    function updateSessionList(newSession) {
+        if (!newSession || !newSession.session_id || !newSession.title) {
+            console.error('Invalid session data received:', newSession);
+            return;
+        }
+
+        let sessionList = $('#session-list ul');
+        let sessionExists = false;
+
+        sessionList.find('li').each(function () {
+            if ($(this).data('session-id') === newSession.session_id) {
+                $(this).text(newSession.title);  // Update the title of existing session
+                sessionExists = true;
+            }
+        });
+
+        if (!sessionExists) {
+            // Create a new list item for the new session
+            sessionList.prepend(
+                `<li class="session-item" data-session-id="${newSession.session_id}" onclick="loadChat('${newSession.session_id}')">${newSession.title}</li>`
+            );
+        }
+    }
+
+
     $(document).ready(function () {
         let attemptCount = 0;
 
-        // Функция для экранирования HTML
+        // Function to escape HTML
         function escapeHtml(text) {
             return text
                 .replace(/&/g, "&amp;")
@@ -335,48 +422,53 @@
             let userMessage = $('#message-input-field').val();
             let submitButton = $('#message-form button');
 
-            // Экранируем сообщение пользователя
+            if (!userMessage) return;  // Don't send empty messages
+
             let escapedUserMessage = escapeHtml(userMessage);
 
-            // Добавляем сообщение пользователя сразу в чат
+            // Append the user's message to the chat history
             $('#chat-history').append(`<p class="message user-message">${escapedUserMessage}</p>`);
-            $('#message-input-field').val(''); // Очищаем поле ввода
-            $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight); // Скроллим вниз
+            $('#message-input-field').val('');  // Clear the input field
+            $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight);  // Scroll to the bottom
 
             attemptCount++;
 
-            // Отключаем кнопку отправки и показываем иконку загрузки
+            // Disable the submit button and show loading icon
             submitButton.prop('disabled', true);
             submitButton.addClass('disabled');
-            submitButton.html('<i class="fa fa-spinner fa-spin"></i>'); // Иконка загрузки
+            submitButton.html('<i class="fa fa-spinner fa-spin"></i>');  // Loading icon
 
             if (attemptCount === 1) {
                 $('#intro-message').hide();
             }
 
-            // Отправляем сообщение на сервер
+            // Send message to the server
             $.ajax({
                 url: '{% url "main" %}',
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({ message: userMessage }),
                 success: function (data) {
-                    // Экранируем ответ AI
                     let escapedAiMessage = escapeHtml(data.response);
 
-                    // Добавляем ответ AI
+                    // Append the AI's response to the chat history
                     $('#chat-history').append(`<p class="message ai-message">${escapedAiMessage}</p>`);
-                    $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight); // Скроллим вниз
+                    $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight);  // Scroll to the bottom
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error sending message:', error);
+                    $('#chat-history').append('<p class="message error-message">Ошибка отправки сообщения. Попробуйте снова.</p>');
                 },
                 complete: function () {
-                    submitButton.prop('disabled', false);
+                    submitButton.prop('disabled', false);  // Enable the submit button again
                     submitButton.removeClass('disabled');
-                    submitButton.html('<i class="fa fa-paper-plane"></i>'); // Возвращаем текст кнопки
+                    submitButton.html('<i class="fa fa-paper-plane"></i>');  // Reset the button icon
                 }
-                });
             });
         });
-    </script>
+    });
+</script>
+
 </body>
 
 </html>
