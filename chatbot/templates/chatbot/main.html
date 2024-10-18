@@ -340,34 +340,42 @@
         </div>
     </div>
     <script>
-    function createNewChat() {
-        console.log("Creating a new chat...");
-        fetch("{% url 'main' %}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: JSON.stringify({ action: 'new_chat' })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log(data);  // Log the response
-            if (data.success && data.last_session) {
-                $('#chat-history').empty();  // Clear the chat history
-                $('#chat-history').append('<p class="chat-placeholder">Добро пожаловать в чатбот! Чатбот будет отвечать на ключевые фразы вашего сообщения.</p>');
-                $('#message-input-field').val('');  // Clear the input field
+        function createNewChat() {
+            console.log("Creating a new chat...");
+            fetch("{% url 'main' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ action: 'new_chat' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);  // Log the response
+                if (data.success) {
+                    // Очищаем историю чата
+                    $('#chat-history').empty();
+                    $('#chat-history').append('<p class="chat-placeholder" id="intro-message">Добро пожаловать в чатбот! Чатбот будет отвечать на ключевые фразы вашего сообщения.</p>');
+                    $('#message-input-field').val('');  // Очищаем поле ввода
 
-                // Update session list with the new session
-                updateSessionList(data.last_session);
-            } else {
-                console.error('Ошибка при создании новой сессии:', data.error || 'Неизвестная ошибка');
-            }
-        })
-        .catch(error => console.error('Ошибка:', error));
-    }
+                    // Обновляем старую активную сессию, если она существует
+                    if (data.last_old_session) {
+                        updateSessionTitle(data.last_old_session.session_id, data.last_old_session.title);
+                    }
 
-    // Function to load chat history when a session is clicked
+                    // Добавляем новую сессию в начало списка
+                    updateSessionList(data.last_new_session);
+
+                    isFirstMessage = true;
+                } else {
+                    console.error('Ошибка при создании новой сессии:', data.error || 'Неизвестная ошибка');
+                }
+            })
+            .catch(error => console.error('Ошибка:', error));
+        }
+
+
     function loadChat(sessionId) {
         fetch(`{% url 'main' %}/${sessionId}`)
         .then(response => response.json())
@@ -381,34 +389,62 @@
         .catch(error => console.error('Ошибка загрузки чата:', error));
     }
 
+    function updateSessionTitle(sessionId, newTitle) {
+        let sessionElement = $(`[data-session-id="${sessionId}"]`);
+        if (sessionElement.length) {
+            sessionElement.text(newTitle);  // Меняем заголовок старой сессии
+        }
+    }
+
+
     function updateSessionList(newSession) {
         if (!newSession || !newSession.session_id || !newSession.title) {
             console.error('Invalid session data received:', newSession);
             return;
         }
-
+    
         let sessionList = $('#session-list ul');
         let sessionExists = false;
-
-        sessionList.find('li').each(function () {
-            if ($(this).data('session-id') === newSession.session_id) {
-                $(this).text(newSession.title);  // Update the title of existing session
-                sessionExists = true;
-            }
-        });
-
-        if (!sessionExists) {
-            // Create a new list item for the new session
-            sessionList.prepend(
+    
+        console.log('Current session list item count:', sessionList.children('li').length);
+    
+        // If the session list is empty, add the new session
+        if (sessionList.children('li').length === 0) {
+            console.log('Session list is empty, adding new session:', newSession.title);
+            sessionList.append(
                 `<li class="session-item" data-session-id="${newSession.session_id}" onclick="loadChat('${newSession.session_id}')">${newSession.title}</li>`
             );
+        } else {
+            // If not empty, check for existing sessions
+            sessionList.find('li').each(function () {
+                if ($(this).data('session-id') === newSession.session_id) {
+                    console.log('Updating existing session:', newSession.title);
+                    $(this).text(newSession.title);  // Update the title of existing session
+                    sessionExists = true;
+                }
+            });
+    
+            if (!sessionExists) {
+                console.log('Adding new session to the list:', newSession.title);
+                sessionList.prepend(
+                    `<li class="session-item" data-session-id="${newSession.session_id}" onclick="loadChat('${newSession.session_id}')">${newSession.title}</li>`
+                );
+            }
         }
+        console.log('Updated session list:', sessionList.html());
     }
+    
 
 
     $(document).ready(function () {
         let attemptCount = 0;
+        let isFirstMessage = true;
 
+
+        function scrollToBottom() {
+            $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight);
+        }
+    
         // Function to escape HTML
         function escapeHtml(text) {
             return text
@@ -418,32 +454,34 @@
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
         }
-
+    
         $('#message-form').submit(function (e) {
             e.preventDefault();
             let userMessage = $('#message-input-field').val();
             let submitButton = $('#message-form button');
-
+    
             if (!userMessage) return;  // Don't send empty messages
-
+    
             let escapedUserMessage = escapeHtml(userMessage);
-
+    
             // Append the user's message to the chat history
             $('#chat-history').append(`<p class="message user-message">${escapedUserMessage}</p>`);
             $('#message-input-field').val('');  // Clear the input field
-            $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight);  // Scroll to the bottom
-
+            
+            scrollToBottom()// Scroll to the bottom
+    
+            if (isFirstMessage) {
+                $('#intro-message').remove();  // Remove the placeholder
+                isFirstMessage = false; // Set the flag to false after the first message
+            }
+    
             attemptCount++;
-
+    
             // Disable the submit button and show loading icon
             submitButton.prop('disabled', true);
             submitButton.addClass('disabled');
             submitButton.html('<i class="fa fa-spinner fa-spin"></i>');  // Loading icon
-
-            if (attemptCount === 1) {
-                $('#intro-message').hide();
-            }
-
+    
             // Send message to the server
             $.ajax({
                 url: '{% url "main" %}',
@@ -452,10 +490,15 @@
                 data: JSON.stringify({ message: userMessage }),
                 success: function (data) {
                     let escapedAiMessage = escapeHtml(data.response);
-
-                    // Append the AI's response to the chat history
+    
                     $('#chat-history').append(`<p class="message ai-message">${escapedAiMessage}</p>`);
-                    $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight);  // Scroll to the bottom
+                    scrollToBottom()  // Scroll to the bottom
+    
+                    // Check if there's a new session
+                    if (data.new_session) {
+                        console.log('New session created:', data.new_session);
+                        updateSessionList(data.new_session);  // Update the session list with the new session
+                    }
                 },
                 error: function (xhr, status, error) {
                     console.error('Error sending message:', error);
@@ -469,6 +512,7 @@
             });
         });
     });
+    
 </script>
 
 </body>

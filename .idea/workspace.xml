@@ -3,8 +3,11 @@
   <component name="ChangeListManager">
     <list default="true" id="d8e4ecea-ca66-4a6f-893d-5f4bd79ad835" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chatbot/clearingModel.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chatbot/create_end_sessions.py" beforeDir="false" afterPath="$PROJECT_DIR$/chatbot/create_end_sessions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chatbot/get_ai_response.py" beforeDir="false" afterPath="$PROJECT_DIR$/chatbot/get_ai_response.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/chatbot/templates/chatbot/main.html" beforeDir="false" afterPath="$PROJECT_DIR$/chatbot/templates/chatbot/main.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chatbot/templates/chatbot/premain.html" beforeDir="false" afterPath="$PROJECT_DIR$/chatbot/templates/chatbot/premain.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chatbot/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/chatbot/views.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -131,13 +134,14 @@
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Mukagali\PycharmProjects\ai-chat-bot\ai-chat-bot\chatbot" />
       <recent name="C:\Users\00060118\PycharmProjects\Daryn\chat_project\chatbot\db" />
       <recent name="C:\Users\00060118\PycharmProjects\Daryn\chat_project" />
       <recent name="C:\Users\00060118\PycharmProjects\Daryn\chat_project\chatbot\templates\chatbot" />
       <recent name="C:\Users\00060118\PycharmProjects\Daryn\chat_project\chatbot\static\chatbot" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.clearingModel">
+  <component name="RunManager" selected="Python.clearingModel (1)">
     <configuration name="check" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="chat_project" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -159,6 +163,27 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="clearingModel (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="chat_project" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/clearingModel.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="clearingModel" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="chat_project" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -172,27 +197,6 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/chatbot/clearingModel.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="db (3)" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="chat_project" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="C:\Users\00060118\PycharmProjects\Daryn\chat_project\chatbot\db\db.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -258,19 +262,19 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.clearingModel (1)" />
       <item itemvalue="Python.clearingModel" />
-      <item itemvalue="Python.db (3)" />
       <item itemvalue="Python.manage" />
       <item itemvalue="Python.django-admin (1)" />
       <item itemvalue="Python.check" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.clearingModel (1)" />
         <item itemvalue="Python.clearingModel" />
         <item itemvalue="Python.check" />
         <item itemvalue="Python.django-admin (1)" />
         <item itemvalue="Python.manage" />
-        <item itemvalue="Python.db (3)" />
       </list>
     </recent_temporary>
   </component>

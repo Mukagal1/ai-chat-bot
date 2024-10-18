@@ -1,16 +1,10 @@
 import os
-from django.shortcuts import render, redirect
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from .models import User, ChatSessions, ChatDetails
 import json
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
-from django.contrib.auth.decorators import login_required
-from openai import OpenAI
-from chat_project.settings import OPENAI_API_KEY
-import threading
-from chatbot.get_ai_response import get_ai_response, update_session_title
+from chatbot.get_ai_response import get_ai_response
+
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -22,10 +16,11 @@ def sessions_list(request, username):
 
 def end_chat(request, history):
     active_session_id = request.session.get('active_session_id')
+    session = None
     if active_session_id:
         try:
             session = ChatSessions.objects.get(session_id=active_session_id)
-            update_session_title(session, history)
+            session.title = get_ai_response("Generate a concise title based on the entire conversation history.", history)
             session.is_active = False
             session.save()
         except ChatSessions.DoesNotExist:
@@ -33,6 +28,8 @@ def end_chat(request, history):
     else:
         logger.error("No active session ID found.")
     history.clear()
+
+    return session
 
 
 def create_chat(request, username):

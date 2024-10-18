@@ -11,7 +11,7 @@ from openai import OpenAI
 from chat_project.settings import OPENAI_API_KEY
 import threading
 from chatbot.create_end_sessions import sessions_list, end_chat, create_chat
-from chatbot.get_ai_response import get_ai_response, update_session_title
+from chatbot.get_ai_response import get_ai_response
 
 
 history = []
@@ -59,34 +59,36 @@ def main(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-
             action = data.get('action')
 
             logger.debug("Action received: %s", action)
 
             if action == 'new_chat':
                 logger.debug("Creating a new chat session")
-                end_chat(request, history)
-                last_session = (create_chat(request, username))
 
-                return JsonResponse({
+                last_old_session = end_chat(request, history)
+                last_session = create_chat(request, username)
+
+                response_data = {
                     'success': True,
-                    'last_session': {
+                    'last_new_session': {
                         'session_id': last_session.session_id,
                         'title': last_session.title,
                     },
-                })
+                    'last_old_session': {
+                        'session_id': last_old_session.session_id if last_old_session else None,
+                        'title': last_old_session.title if last_old_session else None,
+                    }
+                }
+                return JsonResponse(response_data)
 
+            user_message = data.get('message', '')
             active_session_id = request.session.get('active_session_id')
 
             if not active_session_id:
                 last_session = create_chat(request, username)
-
                 active_session_id = last_session.session_id
                 request.session['active_session_id'] = active_session_id
-
-
-            user_message = data.get('message', '')
 
             active_session = ChatSessions.objects.get(session_id=active_session_id)
 
@@ -104,11 +106,20 @@ def main(request):
                 message=response
             )
 
-            return JsonResponse({'response': response})
+            return JsonResponse({
+                'response': response,
+                'new_session': {
+                    'session_id': active_session_id,
+                    'title': active_session.title,
+                }
+            })
+
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
         except User.DoesNotExist:
             return JsonResponse({'error': 'User does not exist'}, status=404)
+        except ChatSessions.DoesNotExist:
+            return JsonResponse({'error': 'Active session does not exist'}, status=404)
         except Exception as e:
             logger.error(f"Error: {str(e)}")
             return JsonResponse({'error': str(e)}, status=500)
@@ -128,7 +139,6 @@ def premain(request):
 
             response = get_ai_response(user_message, history)
 
-
             return JsonResponse({'response': response})
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
@@ -138,7 +148,7 @@ def premain(request):
 
 
 def logout_view(request):
-    end_chat(request, history)
+    session = end_chat(request, history)
     request.session.pop('active_session_id', None)
     logout(request)
     return redirect('login')

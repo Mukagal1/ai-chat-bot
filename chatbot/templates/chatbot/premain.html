@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ru">
 
@@ -7,6 +8,7 @@
     <title>ChatBOT</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/4712/4712103.png" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         body {
@@ -30,10 +32,11 @@
         }
 
         #chat-box {
-            height: 400px;
+            height: 400px; /* You can set the initial height */
+            max-height: 60vh; /* Limit the height to a percentage of the viewport height */
             background-color: #f1f1f1;
             padding: 20px;
-            overflow-y: auto;
+            overflow-y: auto; /* Ensure it can scroll */
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             display: flex;
@@ -44,7 +47,27 @@
         #message-input {
             display: flex;
             margin-top: 15px;
+            position: sticky; /* Sticky позиция */
+            bottom: 0; /* Закрепление снизу */
+            background-color: white; /* Фон для поля */
+            padding: 10px; /* Отступы */
+            border-top: 1px solid #ccc; /* Граница сверху */
+            z-index: 10; /* Чтобы поле было поверх всего */
         }
+
+        #message-input-field {
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-right: 10px;
+            {% comment %} resize: none; /* Запрещаем изменение размера вручную */ {% endcomment %}
+            max-height: 120px; /* Ограничиваем максимальную высоту */
+            height: 50px; /* Высота будет динамической */
+            min-height: 50px; /* Начальная минимальная высота */
+        }
+                  
+        
 
         #message-input input {
             flex-grow: 1;
@@ -55,12 +78,15 @@
         }
 
         #message-input button {
-            padding: 10px 20px;
-            background-color: #007bff;
+            padding: 10px;
             border: none;
             border-radius: 5px;
             color: white;
+            background-color: #007bff; /* Blue color for the button */
             transition: background-color 0.3s ease;
+            width: 50px;  /* Fixed width for the button */
+            height: 50px; /* Fixed height for the button */
+            position: relative; 
         }
 
         #message-input button:hover {
@@ -94,6 +120,7 @@
                 transform: translateY(20px);
                 opacity: 0;
             }
+
             to {
                 transform: translateY(0);
                 opacity: 1;
@@ -144,6 +171,22 @@
             border: 0;
             border-top: 1px solid #ccc;
         }
+
+        /* Loading Animation */
+        .loader {
+            display: none;
+            margin: 0 0px;
+        }
+
+        #message-input button.loading {
+            background-color: gray; /* Change button color to gray when loading */
+        }
+
+        .loader .spinner-border {
+            color: white; /* Gray color for the loader */
+            width: 1em; /* Set size for the loader */
+            height: 1em; /* Set size for the loader */
+        }
     </style>
 </head>
 
@@ -160,57 +203,110 @@
 
         <div id="message-input">
             <form id="message-form" class="w-100 d-flex">
-                <input type="text" id="message-input-field" placeholder="Введите сообщение..." required class="form-control">
-                <button type="submit" class="btn btn-primary">Отправить</button>
+                <textarea id="message-input-field" placeholder="Введите сообщение..." required class="form-control"></textarea>
+                <button type="submit" class="btn">
+                    <i class="fa fa-paper-plane" id="send-icon"></i>
+                    <div class="loader" id="loading-spinner" style="display: none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Загрузка...</span>
+                        </div>
+                    </div>
+                </button>                
+                <div class="loader" id="loading-spinner">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Загрузка...</span>
+                    </div>
+                </div>
             </form>
         </div>
     </div>
 
     <script>
         $(document).ready(function () {
-            let attemptCount = 0;  // Счетчик попыток пользователя
 
+            const messageInputField = document.getElementById('message-input-field');
+
+            messageInputField.addEventListener('input', function () {
+                this.style.height = '50px'; // Сбрасываем высоту перед измерением
+                const maxHeight = 120; // Максимальная высота (например, 100px)
+                const newHeight = Math.min(this.scrollHeight, maxHeight); // Берем минимальное значение между scrollHeight и maxHeight
+                this.style.height = newHeight + 'px'; // Устанавливаем высоту
+            });
+
+
+            let attemptCount = 0;  // Счетчик попыток пользователя
+        
+            // Функция автоматической прокрутки
+            function scrollToBottom() {
+                $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight);
+            }
+        
+            // Изменение высоты поля ввода в зависимости от количества строк
+            $('#message-input-field').on('input', function () {
+                this.style.height = 'auto'; // Сбрасываем высоту
+                this.style.height = (this.scrollHeight) + 'px'; // Устанавливаем новую высоту в зависимости от содержимого
+                scrollToBottom(); // Прокручиваем чат вниз
+            });
+        
             $('#message-form').submit(function (e) {
                 e.preventDefault();
-                let userMessage = $('#message-input-field').val();
-
-                // Добавление сообщения пользователя в чат
-                $('#chat-box').append(`<p class="message user-message">${userMessage}</p>`);
-                $('#message-input-field').val(''); // Очистка поля ввода
-
-                // Счетчик попыток
-                attemptCount++;
-
-                // Скрываем вводное сообщение после первого отправленного сообщения
-                if (attemptCount === 1) {
-                    $('#intro-message').hide();
-                }
-
-                // Отправка сообщения на сервер
-                $.ajax({
-                    url: '{% url "premain" %}',
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({ message: userMessage }),
-                    success: function (response) {
-                        // Добавление ответа ИИ
-                        $('#chat-box').append(`<p class="message ai-message">${response.response}</p>`);
-                        $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight); // Прокрутка вниз
-
-                        // Если счетчик попыток достигает 3
-                        if (attemptCount === 3) {
-                            $('#chat-box').append(`<hr class="divider">`); // Добавляем разделитель
-                            $('#chat-box').append(`<p class="message ai-message">Вы использовали 3 попытки. Пожалуйста, <a href="{% url 'login' %}">войдите</a> или <a href="{% url 'register' %}">зарегистрируйтесь</a>, чтобы продолжить общение.</p>`);
-                            $('#message-input-field').prop('disabled', true);
-                            $('#message-form button').prop('disabled', true);
-                        }
-                    },
-                    error: function (xhr) {
-                        console.error('Ошибка:', xhr.responseText);
+                
+                if (attemptCount < 3) {  // Проверяем количество сообщений перед отправкой
+                    let userMessage = $('#message-input-field').val();
+                
+                    // Добавляем сообщение пользователя
+                    $('#chat-box').append(`<p class="message user-message">${userMessage}</p>`);
+                    $('#message-input-field').val(''); // Очищаем поле ввода
+                    $('#message-input-field').trigger('input'); // Обновляем высоту
+                
+                    attemptCount++;  // Увеличиваем счетчик
+                
+                    if (attemptCount === 1) {
+                        $('#intro-message').hide();
                     }
-                });
+                
+                    scrollToBottom(); // Прокручиваем чат
+                
+                    // Отключаем ввод, показываем загрузку
+                    $('#message-input-field').prop('disabled', true);
+                    $('#message-form button').prop('disabled', true);
+                    $('#loading-spinner').show(); // Показываем анимацию
+                    $('#send-icon').hide(); // Скрываем иконку отправки
+                    $('#message-form button').addClass('loading');
+                
+                    $.ajax({
+                        url: '{% url "premain" %}',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ message: userMessage }),
+                        success: function (response) {
+                            $('#chat-box').append(`<p class="message ai-message">${response.response}</p>`);
+                            scrollToBottom(); // Прокручиваем чат
+                
+                            if (attemptCount === 3) {
+                                $('#chat-box').append(`<hr class="divider">`);
+                                $('#chat-box').append(`<p class="message ai-message">Вы использовали 3 попытки. Пожалуйста, <a href="{% url 'login' %}">войдите</a> или <a href="{% url 'register' %}">зарегистрируйтесь</a>, чтобы продолжить общение.</p>`);
+                                $('#message-input-field').prop('disabled', true); // Отключаем ввод
+                                $('#message-form button').prop('disabled', true); // Отключаем кнопку
+                            }
+                        },
+                        error: function (xhr) {
+                            console.error('Ошибка:', xhr.responseText);
+                        },
+                        complete: function () {
+                            if (attemptCount < 3) {
+                                $('#message-input-field').prop('disabled', false);
+                                $('#message-form button').prop('disabled', false);
+                                $('#loading-spinner').hide();
+                                $('#send-icon').show();
+                                $('#message-form button').removeClass('loading');
+                            }
+                        }
+                    });
+                }
             });
-        });
+        });            
+        
     </script>
 </body>
 
