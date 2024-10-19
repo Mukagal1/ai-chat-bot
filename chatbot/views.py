@@ -1,23 +1,23 @@
 import os
+import json
+import logging
+
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import User, ChatSessions, ChatDetails
-import json
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-from openai import OpenAI
+from django.contrib.auth.models import User
+
+from .models import ChatSessions, ChatDetails
 from chat_project.settings import OPENAI_API_KEY
-import threading
 from chatbot.create_end_sessions import sessions_list, end_chat, create_chat
+from openai import OpenAI
 from chatbot.get_ai_response import get_ai_response
 
+logger = logging.getLogger(__name__)
 
 history = []
-
-import logging
-logger = logging.getLogger(__name__)
 
 
 @csrf_exempt
@@ -33,7 +33,9 @@ def login_view(request):
 
             sessions_list(request, username)
 
-            return redirect('main')  # Redirect to main page
+            history.clear()
+
+            return redirect('main')
     return render(request, 'chatbot/login.html')
 
 
@@ -46,13 +48,51 @@ def register_view(request):
         email = request.POST['email']
         password = request.POST['password']
         User.objects.create_user(username=username, email=email, password=password)
-        return redirect('login')  # Redirecting to login page
+        return redirect('login')
     return render(request, 'chatbot/register.html')
+
+
+@login_required
+@csrf_exempt
+def chat(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            session_id = data.get('session_id')
+
+            if not session_id:
+                return JsonResponse({'error': 'session_id is required'}, status=400)
+
+            if not ChatSessions.objects.filter(session_id=session_id).exists():
+                return JsonResponse({'error': 'Session does not exist'}, status=404)
+
+            details = ChatDetails.objects.filter(session__session_id=session_id).values('role', 'message')
+            
+            details_list = list(details)
+
+            history.clear()
+            for detail in details_list[:10]:
+                history.append({'role': detail['role'], 'content': detail['message']})
+
+            request.session['active_session_id'] = session_id
+
+            return JsonResponse({
+                'details': details_list,
+            })
+
+        except ChatSessions.DoesNotExist:
+            return JsonResponse({'error': 'Session does not exist'}, status=404)
+        except Exception as e:
+            logger.error(f"Error in chat view: {str(e)}")
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
 
 
 @csrf_exempt
 @login_required
-def main(request):
+def main(request, session_id=None):
     username = request.session.get('username', 'Guest')
     sessions = request.session.get('sessions', [])
 
@@ -69,13 +109,16 @@ def main(request):
                 last_old_session = end_chat(request, history)
                 last_session = create_chat(request, username)
 
+                active_session_id = last_session.session_id
+                request.session['active_session_id'] = active_session_id
+
                 response_data = {
                     'success': True,
-                    'last_new_session': {
+                    'new_session': {
                         'session_id': last_session.session_id,
                         'title': last_session.title,
                     },
-                    'last_old_session': {
+                    'old_session': {
                         'session_id': last_old_session.session_id if last_old_session else None,
                         'title': last_old_session.title if last_old_session else None,
                     }
@@ -93,7 +136,7 @@ def main(request):
             active_session = ChatSessions.objects.get(session_id=active_session_id)
 
             ChatDetails.objects.create(
-                sender='user',
+                role='user',
                 session=active_session,
                 message=user_message
             )
@@ -101,19 +144,20 @@ def main(request):
             response = get_ai_response(user_message, history)
 
             ChatDetails.objects.create(
-                sender='assistant',
+                role='assistant',
                 session=active_session,
                 message=response
             )
 
             return JsonResponse({
+                'success': True,
                 'response': response,
                 'new_session': {
-                    'session_id': active_session_id,
+                    'session_id': int(active_session.session_id),
                     'title': active_session.title,
                 }
             })
-
+        
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
         except User.DoesNotExist:
@@ -123,6 +167,7 @@ def main(request):
         except Exception as e:
             logger.error(f"Error: {str(e)}")
             return JsonResponse({'error': str(e)}, status=500)
+
 
     return render(request, 'chatbot/main.html', {
         'username': username,

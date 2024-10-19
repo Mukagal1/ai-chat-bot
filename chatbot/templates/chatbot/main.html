@@ -227,23 +227,9 @@
             }
         }
 
-        .session-list li:hover {
-            background-color: #e2e6ea; /* Color on hover */
-        }
-
         .no-sessions {
             color: #6c757d; /* Gray color for text */
             font-style: italic; /* Italics */
-        }
-
-        .session-list li {
-            background-color: #f8f9fa; /* Light background */
-            border: 1px solid #dee2e6; /* Light border */
-            border-radius: 5px; /* Rounded corners */
-            margin: 10px 0; /* Spacing between items */
-            padding: 10px; /* Inner spacing */
-            transition: background-color 0.3s; /* Smooth transition */
-            list-style-type: none;
         }
 
         ::-webkit-scrollbar {
@@ -277,9 +263,32 @@
             overflow-y: auto; /* Ensure overflow for chat history */
         }
 
-        #session-list {
+        {% comment %} #session-list {
             overflow-y: auto; /* Ensure overflow for session list */
+        } {% endcomment %}
+
+        .session-button {
+            background-color: #f8f9fa; /* Светлый фон */
+            border: 1px solid #dee2e6; /* Светная рамка */
+            border-radius: 5px; /* Скругленные углы */
+            padding: 10px;
+            margin: 3px;
+            transition: background-color 0.3s; /* Плавный переход цвета */
+            cursor: pointer; /* Указатель при наведении */
+            width: 100%; /* Занимает всю ширину контейнера */
+            text-align: left; /* Выравнивание текста слева */
         }
+        
+        .session-button:hover {
+            background-color: #e2e6ea; /* Цвет фона при наведении */
+            border-color: #adb5bd; /* Изменение цвета рамки при наведении (если нужно) */
+        }
+        
+        .session-button:focus {
+            outline: none; /* Убираем стандартный контур фокуса */
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Добавляем тень при фокусе */
+        }
+        
 
 
     </style>
@@ -301,7 +310,11 @@
                     {% if sessions %}
                         <ul class="session-list">
                             {% for session in sessions %}
-                                <li>{{ session.title }}</li>
+                                <li>
+                                    <button class="session-button" data-session-id="{{ session.session_id }}" onclick="onSessionClick('{{ session.session_id }}')">
+                                        {{ session.title }}
+                                    </button>
+                                </li>
                             {% endfor %}
                         </ul>
                     {% else %}
@@ -339,55 +352,88 @@
             </div>
         </div>
     </div>
-    <script>
-        function createNewChat() {
-            console.log("Creating a new chat...");
-            fetch("{% url 'main' %}", {
+<script>
+
+    let isChatCreated = false;  // Флаг, чтобы определить, создан ли чат
+
+    function createNewChat() {
+        console.log("Creating a new chat...");
+        fetch("{% url 'main' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ action: 'new_chat' })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);  // Log the response
+            if (data.success) {
+                // Изменяем URL без перезагрузки страницы
+                history.pushState({}, '', `/main/${data.new_session.session_id}/`);
+    
+                // Очищаем историю чата (если это необходимо)
+                $('#chat-history').empty();
+                $('#chat-history').append('<p class="chat-placeholder" id="intro-message">Добро пожаловать в чатбот! Чатбот будет отвечать на ключевые фразы вашего сообщения.</p>');
+                $('#message-input-field').val('');  // Очищаем поле ввода
+    
+                // Обновляем старую активную сессию, если это необходимо
+                if (data.old_session && data.old_session.session_id) {
+                    updateSessionTitle(data.old_session.session_id, data.old_session.title);
+                }
+    
+                // Добавляем новую сессию в начало списка
+                updateSessionList(data.new_session);
+    
+                isFirstMessage = true;
+                isChatCreated = true;  // Чат был создан через кнопку, поэтому больше не создаём автоматически
+            } else {
+                console.error('Ошибка при создании новой сессии:', data.error || 'Неизвестная ошибка');
+            }
+        })
+        .catch(error => console.error('Ошибка:', error));
+    }
+
+
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+        
+        
+
+        function loadChat(sessionId) {
+            fetch(`/main/details/`, { 
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': '{{ csrf_token }}'
                 },
-                body: JSON.stringify({ action: 'new_chat' })
+                body: JSON.stringify({ session_id: sessionId }) // Передаем session_id в JSON
             })
             .then(response => response.json())
             .then(data => {
-                console.log(data);  // Log the response
-                if (data.success) {
-                    // Очищаем историю чата
+                if (data.details) { // Проверяем, что details существует
                     $('#chat-history').empty();
-                    $('#chat-history').append('<p class="chat-placeholder" id="intro-message">Добро пожаловать в чатбот! Чатбот будет отвечать на ключевые фразы вашего сообщения.</p>');
-                    $('#message-input-field').val('');  // Очищаем поле ввода
-
-                    // Обновляем старую активную сессию, если она существует
-                    if (data.last_old_session) {
-                        updateSessionTitle(data.last_old_session.session_id, data.last_old_session.title);
-                    }
-
-                    // Добавляем новую сессию в начало списка
-                    updateSessionList(data.last_new_session);
-
-                    isFirstMessage = true;
+                    data.details.forEach(detail => {
+                        let messageClass = detail.role === 'user' ? 'user-message' : 'ai-message';
+                        $('#chat-history').append(`<p class="message ${messageClass}">${escapeHtml(detail.message)}</p>`);
+                    });
+                    scrollToBottom(); // Прокручиваем вниз после загрузки истории
                 } else {
-                    console.error('Ошибка при создании новой сессии:', data.error || 'Неизвестная ошибка');
+                    console.error('No chat details received:', data);
+                    $('#chat-history').append('<p class="message error-message">Ошибка загрузки чата. Попробуйте снова.</p>');
                 }
             })
-            .catch(error => console.error('Ошибка:', error));
+            .catch(error => console.error('Ошибка загрузки чата:', error));
         }
-
-
-    function loadChat(sessionId) {
-        fetch(`{% url 'main' %}/${sessionId}`)
-        .then(response => response.json())
-        .then(data => {
-            $('#chat-history').empty();
-            data.chat_details.forEach(detail => {
-                let messageClass = detail.sender === 'user' ? 'user-message' : 'ai-message';
-                $('#chat-history').append(`<p class="message ${messageClass}">${escapeHtml(detail.message)}</p>`);
-            });
-        })
-        .catch(error => console.error('Ошибка загрузки чата:', error));
-    }
+        
+        
 
     function updateSessionTitle(sessionId, newTitle) {
         let sessionElement = $(`[data-session-id="${sessionId}"]`);
@@ -403,115 +449,104 @@
             return;
         }
     
-        let sessionList = $('#session-list ul');
+        let sessionList = $('#session-list');
         let sessionExists = false;
     
-        console.log('Current session list item count:', sessionList.children('li').length);
-    
-        // If the session list is empty, add the new session
-        if (sessionList.children('li').length === 0) {
-            console.log('Session list is empty, adding new session:', newSession.title);
-            sessionList.append(
-                `<li class="session-item" data-session-id="${newSession.session_id}" onclick="loadChat('${newSession.session_id}')">${newSession.title}</li>`
-            );
-        } else {
-            // If not empty, check for existing sessions
-            sessionList.find('li').each(function () {
-                if ($(this).data('session-id') === newSession.session_id) {
-                    console.log('Updating existing session:', newSession.title);
-                    $(this).text(newSession.title);  // Update the title of existing session
-                    sessionExists = true;
-                }
-            });
-    
-            if (!sessionExists) {
-                console.log('Adding new session to the list:', newSession.title);
-                sessionList.prepend(
-                    `<li class="session-item" data-session-id="${newSession.session_id}" onclick="loadChat('${newSession.session_id}')">${newSession.title}</li>`
-                );
+        // Проверяем на наличие существующих сессий
+        sessionList.find('.session-button').each(function () {
+            if ($(this).data('session-id') === newSession.session_id) {
+                $(this).text(newSession.title);  // Обновляем заголовок существующей сессии
+                sessionExists = true;
             }
+        });
+    
+        // Если сессия не существует, добавляем её в начало списка как кнопку
+        if (!sessionExists) {
+            $('.no-sessions').remove(); // Удаляем сообщение "Нет доступных сессий", если оно есть
+            sessionList.prepend(
+                `<button class="session-button" data-session-id="${newSession.session_id}" onclick="onSessionClick('${newSession.session_id}')">${newSession.title}</button>`
+            );
         }
-        console.log('Updated session list:', sessionList.html());
+    }          
+    
+    function onSessionClick(sessionId) {
+        loadChat(sessionId); // Загружаем историю чата для выбранной сессии
     }
+
+
+    function scrollToBottom() {
+            $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight);
+        }
     
 
 
     $(document).ready(function () {
-        let attemptCount = 0;
-        let isFirstMessage = true;
+    let isFirstMessage = true;
 
+    $('#message-form').submit(function (e) {
+        e.preventDefault();
+        let userMessage = $('#message-input-field').val();
+        let submitButton = $('#message-form button');
 
-        function scrollToBottom() {
-            $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight);
-        }
-    
-        // Function to escape HTML
-        function escapeHtml(text) {
-            return text
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-        }
-    
-        $('#message-form').submit(function (e) {
-            e.preventDefault();
-            let userMessage = $('#message-input-field').val();
-            let submitButton = $('#message-form button');
-    
-            if (!userMessage) return;  // Don't send empty messages
-    
-            let escapedUserMessage = escapeHtml(userMessage);
-    
-            // Append the user's message to the chat history
-            $('#chat-history').append(`<p class="message user-message">${escapedUserMessage}</p>`);
-            $('#message-input-field').val('');  // Clear the input field
-            
-            scrollToBottom()// Scroll to the bottom
-    
-            if (isFirstMessage) {
-                $('#intro-message').remove();  // Remove the placeholder
-                isFirstMessage = false; // Set the flag to false after the first message
-            }
-    
-            attemptCount++;
-    
-            // Disable the submit button and show loading icon
-            submitButton.prop('disabled', true);
-            submitButton.addClass('disabled');
-            submitButton.html('<i class="fa fa-spinner fa-spin"></i>');  // Loading icon
-    
-            // Send message to the server
-            $.ajax({
-                url: '{% url "main" %}',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ message: userMessage }),
-                success: function (data) {
-                    let escapedAiMessage = escapeHtml(data.response);
-    
-                    $('#chat-history').append(`<p class="message ai-message">${escapedAiMessage}</p>`);
-                    scrollToBottom()  // Scroll to the bottom
-    
-                    // Check if there's a new session
-                    if (data.new_session) {
-                        console.log('New session created:', data.new_session);
-                        updateSessionList(data.new_session);  // Update the session list with the new session
-                    }
+        if (!userMessage) return;  // Don't send empty messages
+
+        let escapedUserMessage = escapeHtml(userMessage);
+
+        // Добавляем сообщение пользователя в историю
+        $('#chat-history').append(`<p class="message user-message">${escapedUserMessage}</p>`);
+        $('#message-input-field').val('');  // Очищаем поле ввода
+        scrollToBottom();  // Прокручиваем вниз
+
+        if (isFirstMessage && !isChatCreated) {
+            // Создаём новый чат, только если он ещё не был создан
+            $('#intro-message').remove();  // Удаляем placeholder
+            isFirstMessage = false; // Первое сообщение отправлено
+            fetch("{% url 'main' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
                 },
-                error: function (xhr, status, error) {
-                    console.error('Error sending message:', error);
-                    $('#chat-history').append('<p class="message error-message">Ошибка отправки сообщения. Попробуйте снова.</p>');
-                },
-                complete: function () {
-                    submitButton.prop('disabled', false);  // Enable the submit button again
-                    submitButton.removeClass('disabled');
-                    submitButton.html('<i class="fa fa-paper-plane"></i>');  // Reset the button icon
+                body: JSON.stringify({ action: 'new_chat' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    history.pushState({}, '', `/main/${data.new_session.session_id}/`); // Изменяем URL
+                    isChatCreated = true;  // Чат создан
                 }
-            });
+            })
+            .catch(error => console.error('Ошибка:', error));
+        }
+
+        // Отправляем сообщение на сервер
+        $.ajax({
+            url: '{% url "main" %}',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ message: userMessage }),
+            success: function (data) {
+                let escapedAiMessage = escapeHtml(data.response);
+
+                $('#chat-history').append(`<p class="message ai-message">${escapedAiMessage}</p>`);
+                scrollToBottom();  // Прокручиваем вниз
+
+                if (data.new_session) {
+                    updateSessionList(data.new_session);  // Обновляем список сессий
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Ошибка отправки сообщения:', error);
+                $('#chat-history').append('<p class="message error-message">Ошибка отправки сообщения. Попробуйте снова.</p>');
+            },
+            complete: function () {
+                submitButton.prop('disabled', false);  // Активируем кнопку отправки
+                submitButton.removeClass('disabled');
+                submitButton.html('<i class="fa fa-paper-plane"></i>');  // Иконка отправки
+            }
         });
     });
+});
     
 </script>
 

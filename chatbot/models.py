@@ -6,6 +6,7 @@ class User(models.Model):  # chatbot_user
     username = models.CharField(max_length=255, unique=True)
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'user'
@@ -28,7 +29,7 @@ class ChatDetails(models.Model):  # chatbot details
         ('assistant', 'assistant'),
     )
     id = models.AutoField(primary_key=True)
-    sender = models.CharField(max_length=255, choices=SENDER_CHOICES)
+    role = models.CharField(max_length=255, choices=SENDER_CHOICES)
     session = models.ForeignKey(ChatSessions, on_delete=models.CASCADE)
     message = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
