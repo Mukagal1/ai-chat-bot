@@ -408,30 +408,44 @@
         
 
         function loadChat(sessionId) {
-            fetch(`/main/details/`, { 
-                method: 'POST',
+            {% comment %} let method = isSendingMessage ? 'POST' : 'GET'; {% endcomment %}
+            history.pushState({}, '', `/main/${sessionId}/`);
+
+            fetch(`/main/${sessionId}/`, {
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': '{{ csrf_token }}'
                 },
-                body: JSON.stringify({ session_id: sessionId }) // Передаем session_id в JSON
+                // For POST, you can send additional data if needed
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.statusText);
+                }
+                return response.json();
+            })
             .then(data => {
-                if (data.details) { // Проверяем, что details существует
+                if (data.details) {
                     $('#chat-history').empty();
                     data.details.forEach(detail => {
                         let messageClass = detail.role === 'user' ? 'user-message' : 'ai-message';
-                        $('#chat-history').append(`<p class="message ${messageClass}">${escapeHtml(detail.message)}</p>`);
+                        $('#chat-history').append(
+                            `<p class="message ${messageClass}">${escapeHtml(detail.message)}</p>`
+                        );
                     });
-                    scrollToBottom(); // Прокручиваем вниз после загрузки истории
+                    scrollToBottom();
+
+
                 } else {
                     console.error('No chat details received:', data);
                     $('#chat-history').append('<p class="message error-message">Ошибка загрузки чата. Попробуйте снова.</p>');
                 }
             })
-            .catch(error => console.error('Ошибка загрузки чата:', error));
+            .catch(error => console.error('Ошибка при загрузке/отправке чата:', error));
         }
+        
+        
         
         
 

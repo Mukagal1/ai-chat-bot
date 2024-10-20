@@ -54,37 +54,33 @@ def register_view(request):
 
 @login_required
 @csrf_exempt
-def chat(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            session_id = data.get('session_id')
+def chat(request, session_id):
+    try:
+        if not session_id:
+            return JsonResponse({'error': 'session_id is required'}, status=400)
 
-            if not session_id:
-                return JsonResponse({'error': 'session_id is required'}, status=400)
-
-            if not ChatSessions.objects.filter(session_id=session_id).exists():
-                return JsonResponse({'error': 'Session does not exist'}, status=404)
-
-            details = ChatDetails.objects.filter(session__session_id=session_id).values('role', 'message')
-            
-            details_list = list(details)
-
-            history.clear()
-            for detail in details_list[:10]:
-                history.append({'role': detail['role'], 'content': detail['message']})
-
-            request.session['active_session_id'] = session_id
-
-            return JsonResponse({
-                'details': details_list,
-            })
-
-        except ChatSessions.DoesNotExist:
+        if not ChatSessions.objects.filter(session_id=session_id).exists():
             return JsonResponse({'error': 'Session does not exist'}, status=404)
-        except Exception as e:
-            logger.error(f"Error in chat view: {str(e)}")
-            return JsonResponse({'error': str(e)}, status=500)
+
+        details = ChatDetails.objects.filter(session__session_id=session_id).values('role', 'message')
+            
+        details_list = list(details)
+
+        history.clear()
+        for detail in details_list[:10]:
+            history.append({'role': detail['role'], 'content': detail['message']})
+
+        request.session['active_session_id'] = session_id
+
+        return JsonResponse({
+            'details': details_list,
+        })
+
+    except ChatSessions.DoesNotExist:
+        return JsonResponse({'error': 'Session does not exist'}, status=404)
+    except Exception as e:
+        logger.error(f"Error in chat view: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
