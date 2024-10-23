@@ -288,6 +288,233 @@
             outline: none; /* Убираем стандартный контур фокуса */
             box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Добавляем тень при фокусе */
         }
+        .dark-theme {
+            background-color: #2e2e2e;
+            color: #f1f1f1;
+        }
+        
+        .dark-theme #chat-container {
+            background-color: #2e2e2e;
+            border-left: 1px solid #444;
+            padding: 20px;
+        }
+        
+        .dark-theme .sticky-header {
+            background-color: #333;
+            color: #f1f1f1;
+            box-shadow: 0 2px 5px rgba(255, 255, 255, 0.1);
+        }
+        
+        .dark-theme #chat-box {
+            background-color: #3a3a3a;
+            border-bottom: 1px solid #444;
+        }
+        
+        .dark-theme #message-input {
+            background-color: #444;
+            box-shadow: none; /* Уберите тень для темной темы */
+        }
+        
+        .dark-theme #session-history {
+            background-color: #3a3a3a;
+            border-right: 1px solid #444;
+        }
+        
+        .dark-theme #session-list {
+            background-color: #444;
+            border: 1px solid #555;
+        }
+        
+        .dark-theme #session-list h5 {
+            color: #e9ecef;
+        }
+        
+        .dark-theme #session-list p {
+            color: #b0b0b0;
+        }
+        
+        .dark-theme .session-list {
+            color: #f1f1f1;
+        }
+        
+        .dark-theme .message {
+            border-radius: 20px;
+        }
+        
+        .dark-theme .user-message {
+            background-color: #007bff; /* Можно оставить тот же цвет или изменить на более темный */
+            color: #ffffff;
+        }
+        
+        .dark-theme .ai-message {
+            background-color: #555;
+            color: #e1e1e1;
+        }
+        
+        .dark-theme .chat-placeholder {
+            color: #b0b0b0;
+        }
+        
+        .dark-theme .no-sessions {
+            color: #b0b0b0;
+        }
+        
+        .dark-theme #message-input input {
+            background-color: #555;
+            color: #f1f1f1;
+            border: 1px solid #777;
+        }
+        
+        .dark-theme #message-input button {
+            background-color: #666;
+            color: #f1f1f1;
+        }
+        
+        .dark-theme #message-input button.disabled {
+            background-color: #888;
+        }
+        
+        .dark-theme .logout-button {
+            background-color: transparent;
+            color: #f1f1f1;
+        }
+        
+        .dark-theme .logout-button:hover {
+            color: red;
+        }
+        
+        .dark-theme .session-button {
+            background-color: #444;
+            color: #f1f1f1;
+        }
+        
+        .dark-theme .session-button:hover {
+            background-color: #555;
+        }
+        
+        .dark-theme button .fa-plus {
+            color: #f1f1f1; /* Иконки тоже могут быть белыми */
+        }
+        
+        .dark-theme button:hover {
+            background-color: #555;
+        }
+        
+        .dark-theme ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        .dark-theme ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .dark-theme ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .dark-theme ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        .logout-section {
+            background-color: #ffffff; /* Белый фон */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Тень */
+            border-radius: 10px; /* Скругление углов */
+            padding: 10px; /* Отступ */
+            display: flex; /* Используем flexbox для расположения элементов */
+            justify-content: space-between; /* Размещаем элементы по краям */
+            align-items: center; /* Выравнивание по центру */
+        }
+        
+        .logout-button {
+            background-color: transparent; /* Фон кнопки */
+            color: #343a40; /* Темный цвет текста */
+            border: none; /* Убираем рамку */
+            cursor: pointer; /* Курсор при наведении */
+            font-weight: bold; /* Жирный текст */
+        }
+        
+        .logout-button:hover {
+            color: #007bff; /* Цвет текста при наведении */
+        }
+        
+        .switch {
+            position: relative; /* Устанавливаем относительное позиционирование */
+            display: inline-block; /* Блочный элемент для позиционирования */
+            width: 60px; /* Ширина переключателя */
+            height: 34px; /* Высота переключателя */
+        }
+        
+        .switch input {
+            opacity: 0; /* Скрываем оригинальный чекбокс */
+            width: 0; /* Убираем ширину */
+            height: 0; /* Убираем высоту */
+        }
+        
+        .slider {
+            position: absolute; /* Абсолютное позиционирование */
+            cursor: pointer; /* Курсор при наведении */
+            top: 0; /* Верхнее выравнивание */
+            left: 0; /* Левое выравнивание */
+            right: 0; /* Правое выравнивание */
+            bottom: 0; /* Нижнее выравнивание */
+            background-color: #ccc; /* Цвет фона переключателя */
+            transition: .4s; /* Плавный переход */
+            border-radius: 34px; /* Скругление углов */
+        }
+        
+        .slider:before {
+            position: absolute; /* Абсолютное позиционирование для "кнопки" */
+            content: ""; /* Пустое содержимое */
+            height: 26px; /* Высота кнопки */
+            width: 26px; /* Ширина кнопки */
+            left: 4px; /* Левый отступ */
+            bottom: 4px; /* Нижний отступ */
+            background-color: white; /* Белый цвет кнопки */
+            transition: .4s; /* Плавный переход */
+            border-radius: 50%; /* Круглая форма кнопки */
+        }
+        
+        input:checked + .slider {
+            background-color: #007bff; /* Цвет фона переключателя при включении */
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px); /* Перемещаем кнопку вправо */
+        }
+        
+        
+        .dark-theme .logout-section {
+            background-color: #444; /* Темный фон */
+            box-shadow: none; /* Убираем тень или изменяем на более легкую */
+            border-radius: 10px; /* Поддерживаем скругление углов */
+            padding: 10px; /* Можно добавить отступ для лучшего отображения */
+        }
+        
+        .dark-theme .logout-button {
+            background-color: transparent; /* Фон кнопки */
+            color: #f1f1f1; /* Цвет текста */
+        }
+        
+        .dark-theme .logout-button:hover {
+            color: #ff4d4d; /* Цвет текста при наведении */
+        }
+        
+        .dark-theme .slider {
+            background-color: #666; /* Цвет фона переключателя */
+        }
+        
+        .dark-theme .slider:before {
+            background-color: #222; /* Цвет кнопки в переключателе */
+        }
+        
+        .dark-theme input:checked + .slider {
+            background-color: #007bff; /* Цвет фона переключателя при включении */
+        }
+        
+        .dark-theme input:checked + .slider:before {
+            background-color: #f1f1f1; /* Цвет кнопки при включении */
+        }
         
 
 
@@ -321,10 +548,15 @@
                         <p class="no-sessions">Нет доступных сессий.</p>
                     {% endif %}
                 </div>
-                <div class="logout-section shadow-lg bg-white rounded">
+                <div class="logout-section">
                     <button onclick="location.href='{% url 'logout' %}'" class="logout-button">
                         <p>Sign out</p><i class="fa fa-sign-out"></i>
                     </button>
+
+                    <label class="switch">
+                        <input type="checkbox" id="theme-toggle">
+                        <span class="slider"></span>
+                    </label>
                 </div>
             </div>
             <div class="col-9" id="chat-container">
@@ -353,6 +585,46 @@
         </div>
     </div>
 <script>
+    const themeToggle = document.getElementById('theme-toggle');
+
+    // Загружаем тему из localStorage
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    applyTheme(savedTheme);
+
+    themeToggle.checked = savedTheme === 'dark';
+
+    themeToggle.addEventListener('click', () => {
+        const newTheme = document.body.classList.contains('dark-theme') ? 'light' : 'dark';
+        applyTheme(newTheme);
+        
+        // Сохраняем тему в localStorage
+        localStorage.setItem('theme', newTheme);
+
+        // Отправляем на сервер
+        fetch('{% url "theme" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ theme: newTheme })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Тема изменена на сервере:', data);
+        })
+        .catch(error => console.error('Ошибка отправки темы:', error));
+    });
+
+    function applyTheme(theme) {
+        if (theme === 'dark') {
+            document.body.classList.add('dark-theme');
+            themeToggle.textContent = 'Switch to Light Theme';
+        } else {
+            document.body.classList.remove('dark-theme');
+            themeToggle.textContent = 'Switch to Dark Theme';
+        }
+    }
 
     let isChatCreated = false;  // Флаг, чтобы определить, создан ли чат
 

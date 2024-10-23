@@ -137,7 +137,8 @@ def main(request, session_id=None):
                 message=user_message
             )
 
-            response = get_ai_response(user_message, history)
+            theme = request.session.get('theme', 'light')
+            response = get_ai_response(theme, user_message, history)
 
             ChatDetails.objects.create(
                 role='assistant',
@@ -171,6 +172,14 @@ def main(request, session_id=None):
     })
 
 
+def theme(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        theme = data.get('theme', 'light')
+        request.session['theme'] = theme
+        return JsonResponse({'status': 'success', 'theme': theme})
+
+
 @csrf_exempt
 def premain(request):
     if request.method == 'POST':
@@ -178,7 +187,8 @@ def premain(request):
             data = json.loads(request.body)
             user_message = data.get('message', '')
 
-            response = get_ai_response(user_message, history)
+            theme = request.session.get('theme', 'light')
+            response = get_ai_response(theme, user_message, history)
 
             return JsonResponse({'response': response})
         except json.JSONDecodeError:

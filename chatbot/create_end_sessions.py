@@ -20,7 +20,8 @@ def end_chat(request, history):
     if active_session_id:
         try:
             session = ChatSessions.objects.get(session_id=active_session_id)
-            session.title = get_ai_response("Generate a concise title based on the entire conversation history.", history)
+            theme = request.session.get('theme', 'light')
+            session.title = get_ai_response(theme=theme, new_message="Generate a concise title based on the entire conversation history.", conversation_history=history)
             session.is_active = False
             session.save()
         except ChatSessions.DoesNotExist:

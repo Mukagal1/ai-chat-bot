@@ -23,6 +23,7 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),  # Logout page
     path('register/', views.register_view, name='register'),  # Register page
     path('premain/', views.premain, name='premain'),  # Pre-main page
-    path('main/<str:session_id>/', views.chat, name='details')  # Opening or creating chat page
+    path('main/<str:session_id>/', views.chat, name='details'),  # Opening or creating chat page
+    path('theme/', views.theme, name='theme')  # Theme 
 ]
     
