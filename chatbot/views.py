@@ -172,6 +172,7 @@ def main(request, session_id=None):
     })
 
 
+@csrf_exempt
 def theme(request):
     if request.method == 'POST':
         data = json.loads(request.body)
